@@ -1,138 +1,95 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include<stdio.h>
+#include<string.h>
+#include<conio.h>
 
-void main()
-{
-    printf("PASS 1\n");
+FILE *fp1,*fp2,*fp3,*fp4,*fp5;
+int locctr,i,n=-1,j=0,start,optab_size=-1,symtab_size=-1,optab_mnemonic,flag,len;
+char label[10],opcode[10],operand[10],temp[10],optab_code[10];
 
-    // variables
-    char label[10], opcode[10], operand[10];
-    char optab_opcode[10], machine_code[10];
-    int starting_address, location_counter;
-    bool opcode_found = false;
+struct optab{
+    char opcode[10];
+    int mnemonic;
+}op[30];
+struct symatb{
+    int address;
+    char label[10];
+    int flag;
+}sym[30];
+void main(){
+    fp1=fopen("input.txt","r");
+    fp2=fopen("optab.txt","r");
+    fp3=fopen("intermediate.txt","w");
+    fp4=fopen("symtab.txt","w");
+    fp5=fopen("length.txt","w");
+    optab_size++;
+    //optab reading
+    while (fscanf(fp2, "%s %x", op[optab_size].opcode, &op[optab_size].mnemonic) != EOF) {
+            printf("%s\n",op[optab_size].opcode);
+        optab_size++;
 
-    // file pointer
-    FILE *input_file, *optab_file, *symtab_file, *output_file;
-
-    // open file
-    input_file = fopen("input.txt", "r");
-    optab_file = fopen("optab.txt", "r");
-    symtab_file = fopen("symtab.txt", "w+");
-    output_file = fopen("intermediate.txt", "w");
-
-    // check file
-    if (input_file == NULL || optab_file == NULL || symtab_file == NULL || output_file == NULL)
-    {
-        printf("Error! opening file");
-        exit(1);
     }
-    else
-    {
-        printf("All file opened successfully\n");
+    fclose(fp2);
+    fscanf(fp1,"%s %s %x",label,opcode,&start);
+    //starting addres to locctr
+    if(strcmp(opcode,"START")==0){
+        locctr=start;
+        fprintf(fp3,"\t%s\t%s\t%x",label,opcode,locctr);
+    }else{
+        locctr=0;
     }
-
-    // read the first line of input file
-    fscanf(input_file, "%s %s %s", label, opcode, operand);
-
-    // check if opcode is START
-    if (strcmp(opcode, "START") == 0)
-    {
-        location_counter = atoi(operand);
-        starting_address = location_counter;
-    }
-    else
-    {
-        location_counter = 0;
-        starting_address = 0;
-    }
-
-    printf("\nOUTPUT:\n\n");
-
-    fprintf(output_file, "-\t%s\t%s\t%s\n", label, opcode, operand);
-    printf("-\t%s\t%s\t%s\n", label, opcode, operand);
-
-    fscanf(input_file, "%s %s %s", label, opcode, operand);
-    while (strcmp(opcode, "END") != 0)
-    {
-
-        if (strcmp(label, "-") != 0) // check if label is present
-        {
-            fprintf(symtab_file, "%s\t%d\n", label, location_counter);
-        }
-
-        // check opcode is present in optab_file
-        rewind(optab_file);
-        opcode_found = false;
-        fscanf(optab_file, "%s %s", optab_opcode, machine_code);
-
-        // printf("\nTEST searching for opcode: %s\n", opcode);
-
-        /*
-            NOTE:
-            In optab search logic, we are using feof() function to check if end of file is reached.
-            But there is little problem with current logic implemented here.
-            if opcode to be found is in the last line of optab_file it will return false,
-            So either add one more line in optab_file or change the logic.
-        */
-
-        while (!feof(optab_file))
-        {
-            if (strcmp(optab_opcode, opcode) == 0) // if opcode in optab_file is same as opcode in input_file
-            {
-                opcode_found = true;
-                // printf("\nTEST %s opcode found\n", opcode);
-                break;
+    fscanf(fp1,"%s%s%s",label,opcode,operand);
+    while(strcmp(opcode,"END")!=0){
+        fprintf(fp3,"\n%X\t%s\t%s\t%s",locctr,label,opcode,operand);
+        if(strcmp(label,"**")!=0){
+            for(i=0;i<=symtab_size;i++){
+                if(strcmp(sym[i].label,label)==0){
+                    symtab_size++;
+                    strcpy(sym[symtab_size].label,label);
+                    sym[symtab_size].address=locctr;
+                    sym[symtab_size].flag=1;
+                    fprintf(fp4,"\n%x\t%s\t%d",sym[symtab_size].address,sym[symtab_size].label,sym[symtab_size].flag);
+                    exit(0);
+                }
             }
-            // printf("\nTEST optab_file: %s %s\n", optab_opcode, machine_code);
-            fscanf(optab_file, "%s %s", optab_opcode, machine_code);
+            symtab_size++;
+            strcpy(sym[symtab_size].label,label);
+            sym[symtab_size].address=locctr;
+            sym[symtab_size].flag=0;
+            fprintf(fp4,"\n%x\t%s\t%d",sym[symtab_size].address,sym[symtab_size].label,sym[symtab_size].flag);
         }
-
-        fprintf(output_file, "%d\t%s\t%s\t%s\n", location_counter, label, opcode, operand);
-        printf("%d\t%s\t%s\t%s\n", location_counter, label, opcode, operand);
-
-        if (opcode_found)
-        {
-            location_counter += 3;
+        flag=0;
+        for(j=0;j<=optab_size;j++){
+            if(strcmp(op[j].opcode,opcode)==0){
+                locctr+=3;
+                flag=1;
+            }
         }
-        else if (strcmp(opcode, "BYTE") == 0)
-        {
-            location_counter += strlen(operand) - 3;
+        if(flag==0){
+            if(strcmp(opcode,"WORD")==0){
+                locctr+=3;
+            }
+            else if(strcmp(opcode,"RESW")==0){
+                locctr+=(3*(atoi(operand)));
+            }
+            else if(strcmp(opcode,"BYTE")==0){
+                len=strlen(operand);
+                len=len-3;
+                locctr+=len;
+            }
+            else if(strcmp(opcode,"RESB")==0){
+                locctr+=(atoi(operand));
+            }else{
+                printf("Mo such operand in optab and not 'WORD' 'RESB' 'RESW' 'BYTE' \n");
+                exit(0);
+            }
         }
-        else if (strcmp(opcode, "RESB") == 0)
-        {
-            location_counter += atoi(operand);
-        }
-        else if (strcmp(opcode, "WORD") == 0)
-        {
-            location_counter += 3;
-        }
-        else if (strcmp(opcode, "RESW") == 0)
-        {
-            location_counter += 3 * atoi(operand);
-        }
-        else
-        {
-            printf("Error! Invalid opcode\n");
-            printf("opcode: %s\n", opcode);
-            exit(1);
-        }
-
-        // printf("-\t%s\t%s\t%s\n", label, opcode, operand);
-        fscanf(input_file, "%s %s %s", label, opcode, operand);
+        fscanf(fp1,"%s%s%s",label,opcode,operand);
     }
-
-    // print last line
-    fprintf(output_file, "%d\t%s\t%s\t%s\n", location_counter, label, opcode, operand);
-    printf("%d\t%s\t%s\t%s\n", location_counter, label, opcode, operand);
-
-    // print the size of the program
-    printf("\nSize of the program: %d\n", location_counter - starting_address);
-
-    // close file
-    fclose(input_file);
-    fclose(optab_file);
-    fclose(symtab_file);
-    fclose(output_file);
+    fprintf(fp3,"\n%X\t%s\t%s\t%s",locctr,label,opcode,operand);
+    printf("length=>%X\n",locctr-start);
+    fprintf(fp5,"%X",locctr-start);
+    fclose(fp1);
+    fclose(fp3);
+    fclose(fp4);
+    fclose(fp5);
 }
