@@ -20,32 +20,34 @@ void main(){
             scanf("%d%d%d",&p[i].pid,&p[i].at,&p[i].bt);
             p[i].visited=0;
     }
-    time=0;
+    time =0;
     count=0;
-    while(count<n){
+    while(count<n)
+    {
         min=-1;
-        for(i=0;i<n;i++){
-            if(p[i].at<=time && p[i].visited==0){
-                if(min==-1 || p[i].at<p[min].at){ /*the code is same for fcfs,sjf,priority scheduling except this if condition
-                                                    for sjf we use if(min==-1 || p[i].bt<p[min].bt)
-                                                    for priority we use if(min==-1 || p[i].priority<p[min].priority)*/
+        for (int i=0;i<n;i++)
+        {
+            if(p[i].at<time && p[i].visited!=1)
+            {
+                if(min==-1|| p[i].at>p[min].at)
+                {
                     min=i;
                 }
             }
-        }
-        if(min==-1){
-            time++;
-        }else{
-            printf("%d ->>>>>>>>>> ",time);
-            time=time+p[min].bt;
-            printf("%d ->p%d\n",time,p[min].pid);
-            p[min].ct=time;
-            p[min].tat=p[min].ct-p[min].at;
-            p[min].wt=p[min].tat-p[min].bt;
-            p[min].visited=1;
-            count++;
-        }
+            if(min==-1)
+            {
+                time++;
+            }
+            else
+            {
+                p[i].ct=time+p[i].bt;
+                p[i].tat=p[i].ct-p[i].at;
+                p[i].wt=p[i].tat-p[i].bt;
+                p[i].visited=1;
+                count++;
+            }
 
+        }
     }
     printf("pid\tat\tbt\tct\ttat\twt\n");
     printf("------------------------------------------------------------------------------------\n");
