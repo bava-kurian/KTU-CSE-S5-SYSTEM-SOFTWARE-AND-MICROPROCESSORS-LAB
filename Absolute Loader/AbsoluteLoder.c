@@ -40,4 +40,3 @@ void main()
         fscanf(fp1,"%s",line);
     }
 }
-
