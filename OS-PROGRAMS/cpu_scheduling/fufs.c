@@ -25,6 +25,7 @@ void main(){
     while(count<n)
     {
         min=-1;
+
         for (int i=0;i<n;i++)
         {
             if(p[i].at<time && p[i].visited!=1)
@@ -40,15 +41,20 @@ void main(){
             }
             else
             {
+                printf("|%d|",time);
                 p[i].ct=time+p[i].bt;
                 p[i].tat=p[i].ct-p[i].at;
                 p[i].wt=p[i].tat-p[i].bt;
                 p[i].visited=1;
+                time=p[i].ct;
+                printf("'%d'",p[i].pid);
                 count++;
             }
 
         }
     }
+    printf("|%d|",time);
+    printf("\n");
     printf("pid\tat\tbt\tct\ttat\twt\n");
     printf("------------------------------------------------------------------------------------\n");
     for(i=0;i<n;i++){
