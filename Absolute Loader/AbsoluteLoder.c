@@ -27,12 +27,12 @@ void main()
                 {
                     temp[j++] = line[i];
                 }
-            start_addr=atoi(temp);
+            start_addr=strtol(temp,NULL,16);
             for(int i=12;i<strlen(line);i++)
             {
                 if(line[i]=='^')
                     continue;
-                printf("%d  %c%c \n",start_addr,line[i],line[i+1]);
+                printf("%X  %c%c \n",start_addr,line[i],line[i+1]);
                 i++;
                 start_addr++;
             }
